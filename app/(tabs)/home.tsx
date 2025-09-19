@@ -3,10 +3,12 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Modal } fr
 import { router, Stack } from "expo-router";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import Header from './header';
-import BottomNav from './bottomnav';
-import SideMenu from './sidemenu';
-import ProfileModal from './profile';
+import Header from '../header';
+import BottomNav from '../bottomnav';
+import SideMenu from '../sidemenu';
+import ProfileModal from '../profile';
+import ProductGrid from '../Product';
+import Service from './services'; // सर्विस कंपोनेंट को इम्पोर्ट करें
 
 // Placeholder for a generic user profile image
 const userProfilePlaceholder = 'https://i.ibb.co/6P6Xq4x/placeholder-profile.png';
@@ -28,9 +30,13 @@ const Home: FC = () => {
     router.push("/startscreen");
   };
 
-  const handleCropProtection = () => {
+  const handleweather = () => {
     setMenuVisible(false);
-    router.push("/cropprotection");
+    router.push("/weather");
+  };
+
+  const handleChatbot = () => {
+    router.push("/aichatbot");
   };
 
   return (
@@ -56,53 +62,37 @@ const Home: FC = () => {
           </View>
 
           {/* Weather Card */}
-          <View style={[styles.card, styles.weatherCard]}>
-            <View style={styles.weatherInfo}>
-              <View style={styles.weatherLeft}>
-                <Text style={styles.weatherTitle}>Weather</Text>
-                <View style={styles.weatherTemp}>
-                  <Ionicons name="cloudy" size={40} color="#2e7d32" />
-                  <Text style={styles.weatherDegrees}>27°</Text>
+          <TouchableOpacity onPress={handleweather}>
+            <View style={[styles.card, styles.weatherCard]} >
+              <View style={styles.weatherInfo} >
+                <View style={styles.weatherLeft} >
+                  <Text style={styles.weatherTitle} >Weather</Text>
+                  <View style={styles.weatherTemp}>
+                    <Ionicons name="cloudy" size={40} color="#2e7d32" />
+                    <Text style={styles.weatherDegrees}>27°</Text>
+                  </View>
+                  <Text style={styles.weatherCondition}>Drizzle</Text>
                 </View>
-                <Text style={styles.weatherCondition}>Drizzle</Text>
-              </View>
-              <View style={styles.weatherRight}>
-                <Text style={styles.weatherCity}>Hyderabad</Text>
-                <Text style={styles.weatherDescription}>light intensity drizzle</Text>
+                <View style={styles.weatherRight}>
+                  <Text style={styles.weatherCity}>Hyderabad</Text>
+                  <Text style={styles.weatherDescription}>light intensity drizzle</Text>
+                </View>
               </View>
             </View>
-          </View>
+          </TouchableOpacity>
 
           {/* Products Section */}
           <Text style={styles.sectionTitle}>Products</Text>
-          <View style={styles.productsGrid}>
-            <TouchableOpacity style={styles.productItem}>
-              <Ionicons name="cart" style={styles.productIcon} />
-              <Text>Buy</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.productItem}>
-              <MaterialCommunityIcons name="seedling" style={styles.productIcon} />
-              <Text>Hybrid Seeds</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.productItem} onPress={handleCropProtection}>
-              <Ionicons name="leaf" style={styles.productIcon} />
-              <Text>Crop Protection</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.productItem}>
-              <Ionicons name="qr-code" style={styles.productIcon} />
-              <Text>Genuinity Check</Text>
-            </TouchableOpacity>
-          </View>
+          <ProductGrid />
 
           {/* Services Section */}
           <Text style={styles.sectionTitle}>Services</Text>
-          {/* You can add more service items here */}
-
+          <Service />
         </ScrollView>
 
         {/* Floating Action Button */}
-        <TouchableOpacity style={styles.fab}>
-            <Ionicons name="chatbubbles" style={styles.fabIcon} />
+        <TouchableOpacity style={styles.fab} onPress={handleChatbot}>
+          <Ionicons name="chatbubbles" style={styles.fabIcon} />
         </TouchableOpacity>
       </View>
       
@@ -118,7 +108,7 @@ const Home: FC = () => {
         onLogout={handleLogout}
       />
       
-      <BottomNav />
+      {/* <BottomNav /> */}
     </>
   );
 };
@@ -202,31 +192,6 @@ const styles = StyleSheet.create({
     color: '#2e7d32',
     marginTop: 10,
     marginBottom: 10,
-  },
-  productsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  productItem: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 15,
-    width: '48%',
-    aspectRatio: 1,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-  },
-  productIcon: {
-    fontSize: 50,
-    marginBottom: 10,
-    color: '#2e7d32',
   },
   fab: {
     position: 'absolute',

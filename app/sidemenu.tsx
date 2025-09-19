@@ -14,16 +14,21 @@ const drawerProfileImage = 'https://img.freepik.com/premium-photo/3d-cartoon-sty
 const SideMenu: FC<SideMenuProps> = ({ isVisible, onClose, onLogout }) => {
   const handleDiseaseDetectionPress = () => {
     onClose(); // मेनू बंद करें
-    router.push('/diseasedetection'); // 'DiseaseDetection' स्क्रीन पर नेविगेट करें
+    router.push('/diseasedetection'); 
   };
    const handleSoilDetectionPress = () => {
     onClose(); // मेनू बंद करें
-    router.push('/soildetection'); // 'DiseaseDetection' स्क्रीन पर नेविगेट करें
+    router.push('/soildetection'); 
   };
 
   const handleMandiPricePress = () => {
     onClose(); // मेनू बंद करें
-    router.push('/mandiprice'); // 'DiseaseDetection' स्क्रीन पर नेविगेट करें
+    router.push('/mandiprice'); 
+  };
+
+   const handleAiChatBotPress = () => {
+    onClose(); // मेनू बंद करें
+    router.push('/aichatbot'); 
   };
 
   
@@ -60,7 +65,7 @@ const SideMenu: FC<SideMenuProps> = ({ isVisible, onClose, onLogout }) => {
               <Text style={styles.menuText}>Soil Health </Text>
             </TouchableOpacity>
             
-            <TouchableOpacity style={styles.menuItem}>
+            <TouchableOpacity style={styles.menuItem} onPress={handleAiChatBotPress}>
               <Text style={styles.menuText}>Ai Chatbot</Text>
             </TouchableOpacity>
             
