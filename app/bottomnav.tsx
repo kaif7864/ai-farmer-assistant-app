@@ -1,6 +1,11 @@
+import { router } from 'expo-router';
+import { Route } from 'expo-router/build/Route';
 import React, { FC } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+const handleServices = () =>{
+    router.push('/services');
+};
 
 const BottomNav: FC = () => {
   return (
@@ -9,7 +14,7 @@ const BottomNav: FC = () => {
         <Ionicons name="home" style={[styles.navIcon, styles.activeNavIcon]} />
         <Text style={[styles.navText, styles.activeNavText]}>Home</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.navItem}>
+      <TouchableOpacity style={styles.navItem} onPress={handleServices}>
         <Ionicons name="options-outline" style={styles.navIcon} />
         <Text style={styles.navText}>Services</Text>
       </TouchableOpacity>
