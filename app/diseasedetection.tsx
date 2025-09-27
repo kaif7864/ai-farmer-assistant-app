@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image 
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import * as ImagePicker from 'expo-image-picker'; // ImagePicker को इंपोर्ट किया गया है
+import { router } from "expo-router";
 
 const DiseaseDetection: FC = () => {
   const [activeTab, setActiveTab] = useState("upload");
@@ -111,7 +112,7 @@ const DiseaseDetection: FC = () => {
                 </>
               )}
               {selectedImage && (
-                <TouchableOpacity style={styles.detectButton}>
+                <TouchableOpacity style={styles.detectButton} onPress={() => router.push("/diseasedetail")}>
                   <Text style={styles.detectButtonText}>Detect Disease</Text>
                 </TouchableOpacity>
               )}
@@ -148,7 +149,7 @@ const DiseaseDetection: FC = () => {
                   style={[styles.input, styles.textarea]}
                 />
               </View>
-              <TouchableOpacity style={styles.detectButton}>
+              <TouchableOpacity style={styles.detectButton} onPress={() => router.push("/diseasedetail")}>
                 <Text style={styles.detectButtonText}>Detect Disease</Text>
               </TouchableOpacity>
             </View>
@@ -280,6 +281,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     borderRadius: 50,
     marginTop: 20,
+    alignItems: "center",
   },
   detectButtonText: {
     color: '#fff',

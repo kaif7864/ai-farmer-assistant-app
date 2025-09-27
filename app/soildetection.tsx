@@ -1,7 +1,9 @@
 import React, { FC, useState } from "react";
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Alert } from "react-native";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { router } from "expo-router";
 
 const SoilDetection: FC = () => {
   const [nitrogen, setNitrogen] = useState<string>('');
@@ -15,6 +17,7 @@ const SoilDetection: FC = () => {
     // Check if all fields are filled
     if (!nitrogen || !phosphorus || !potassium || !ph || !temperature) {
       Alert.alert('Error', 'Please fill all parameters.');
+      router.push("/soilrecommendetion");
       return;
     }
 

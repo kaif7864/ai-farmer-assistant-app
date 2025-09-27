@@ -9,7 +9,7 @@ import {
   Alert,
 } from "react-native";
 import { Link, useRouter, Stack } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, FontAwesome } from "@expo/vector-icons"; // FontAwesome added for Google icon
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type User = {
@@ -40,7 +40,7 @@ export default function RegisterScreen() {
     loadUsers();
   }, []);
 
-  // Handle registration
+  // Handle email/password registration
   const handleRegister = async () => {
     if (!name || !email || !password) {
       Alert.alert("Error", "All fields are mandatory!");
@@ -60,7 +60,7 @@ export default function RegisterScreen() {
       await AsyncStorage.setItem("@users", JSON.stringify(updatedUsers));
       setUsers(updatedUsers);
 
-      Alert.alert("Success", "Account created successfully!", [
+      Alert.alert("Success", "Account created successfully! Please log in.", [
         {
           text: "OK",
           onPress: () => {
@@ -76,6 +76,23 @@ export default function RegisterScreen() {
       Alert.alert("Error", "Failed to save user. Try again.");
     }
   };
+  
+  // --- NEW FUNCTION: Mock Google Registration ---
+  const handleGoogleRegister = () => {
+    // NOTE: For a real app, you must implement the Google Sign-In SDK here.
+    // For now, we simulate success and redirection.
+    Alert.alert("Google Sign-Up", "Registering with Google will automatically create your account and redirect you to the home screen.", [
+      {
+        text: "Simulate Success",
+        onPress: () => router.replace("/home"), // Redirect to home after successful registration
+      },
+      {
+        text: "Cancel",
+        style: 'cancel',
+      }
+    ]);
+  };
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -92,6 +109,20 @@ export default function RegisterScreen() {
       />
 
       <Text style={styles.title}>Register</Text>
+      
+      {/* --- GOOGLE REGISTRATION BUTTON (New) --- */}
+      <TouchableOpacity style={styles.googleButton} onPress={handleGoogleRegister}>
+        <FontAwesome name="google" size={20} color="#DB4437" style={styles.googleIcon} />
+        <Text style={styles.googleButtonText}>Register with Google</Text>
+      </TouchableOpacity>
+      
+      {/* Separator */}
+      <View style={styles.separatorContainer}>
+        <View style={styles.separatorLine} />
+        <Text style={styles.separatorText}>OR</Text>
+        <View style={styles.separatorLine} />
+      </View>
+
 
       <TextInput
         style={styles.input}
@@ -106,6 +137,7 @@ export default function RegisterScreen() {
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
+        autoCapitalize="none"
       />
 
       <TextInput
@@ -146,6 +178,55 @@ const styles = StyleSheet.create({
   hicon:{
     paddingRight: 25
   },
+  
+  // --- NEW STYLES FOR GOOGLE BUTTON ---
+  googleButton: {
+    width: "90%",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: "#fff", // White background for Google button
+    paddingVertical: 15,
+    borderRadius: 10,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "#ddd", // Light border
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
+  },
+  googleIcon: {
+    marginRight: 10,
+  },
+  googleButtonText: {
+    color: "#4285F4", // Google Blue
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+
+  // --- NEW STYLES FOR SEPARATOR ---
+  separatorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '90%',
+    marginVertical: 15,
+  },
+  separatorLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#ccc',
+  },
+  separatorText: {
+    width: 40,
+    textAlign: 'center',
+    color: '#666',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  
+  // Existing Styles
   input: {
     width: "90%",
     height: 50,

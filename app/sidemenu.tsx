@@ -31,6 +31,20 @@ const SideMenu: FC<SideMenuProps> = ({ isVisible, onClose, onLogout }) => {
     router.push('/aichatbot'); 
   };
 
+  const handleFertilizePress = () => {
+    onClose(); // मेनू बंद करें
+    router.push('/fertilizerrecommendation'); 
+  };
+  const handleYieldPress =()=>{
+    onClose();
+   router.push('/yieldprediction')
+  };
+  const handleCropRotationPress=()=>{
+    onClose();
+    router.push("/croprotationplanner");
+  };
+
+
   
 
   return (
@@ -74,14 +88,14 @@ const SideMenu: FC<SideMenuProps> = ({ isVisible, onClose, onLogout }) => {
               <Text style={styles.menuText} >Disease Detection</Text>
             </TouchableOpacity>
             
-            <TouchableOpacity style={styles.menuItem}>
-              <Text style={styles.menuText}>add option</Text>
+            <TouchableOpacity style={styles.menuItem} onPress={handleFertilizePress}>
+              <Text style={styles.menuText}>Fertilization</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem}>
-              <Text style={styles.menuText}>new option</Text>
+            <TouchableOpacity style={styles.menuItem} onPress={handleYieldPress}>
+              <Text style={styles.menuText}>Yield Pridiction</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.menuItem}>
-              <Text style={styles.menuText}>option 2</Text>
+            <TouchableOpacity style={styles.menuItem} onPress={handleCropRotationPress}>
+              <Text style={styles.menuText}>Crop Rotation</Text>
             </TouchableOpacity>
           </ScrollView>
           {/* Footer */}
