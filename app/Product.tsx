@@ -16,8 +16,8 @@ const ProductGrid: FC = () => {
         <Text style={styles.productText}>Buy</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.productItem}>
-        <MaterialCommunityIcons name="seedling" style={styles.productIcon} />
-        <Text style={styles.productText}>Hybrid Seeds</Text>
+        <MaterialCommunityIcons name="seedling" style={styles.productIcon} onPress={()=> router.push('/seedvariety')}/>
+        <Text style={styles.productText}>Seed Variety</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.productItem} onPress={handleCropProtection}>
         <Ionicons name="leaf" style={styles.productIcon} />
