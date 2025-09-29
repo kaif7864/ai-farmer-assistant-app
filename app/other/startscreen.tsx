@@ -41,14 +41,14 @@ const StartScreen: FC = () => {
           <Text style={styles.subtitle}></Text>
 
           {/* Login button */}
-          <Link href="/login" asChild>
+          <Link href="/account/login" asChild>
             <TouchableOpacity style={styles.loginButton}>
               <Text style={styles.loginText}>Log In</Text>
             </TouchableOpacity>
           </Link>
 
           {/* Register button */}
-          <Link href="/register" asChild>
+          <Link href="/account/register" asChild>
             <TouchableOpacity style={styles.registerButton}>
               <Text style={styles.registerText}>Register</Text>
             </TouchableOpacity>

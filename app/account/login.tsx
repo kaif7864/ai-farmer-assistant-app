@@ -60,7 +60,7 @@ export default function LoginScreen() {
         options={{
           headerTitle: "",
           headerRight: () => (
-            <TouchableOpacity onPress={() => router.push("/startscreen")}>
+            <TouchableOpacity onPress={() => router.push("/other/startscreen")}>
               <Ionicons name="home" size={26} color="#2e7d32"  style={styles.hicon} />
             </TouchableOpacity>
           ),
@@ -104,7 +104,7 @@ export default function LoginScreen() {
         <Text style={styles.buttonText}>Log In</Text>
       </TouchableOpacity>
 
-      <Link href="/register" asChild>
+      <Link href="/account/register" asChild>
         <TouchableOpacity>
           <Text style={styles.linkText}>Don't have an account? Register</Text>
         </TouchableOpacity>
