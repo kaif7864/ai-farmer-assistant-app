@@ -1,50 +1,74 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { AntDesign, Feather } from '@expo/vector-icons'; // Example icon library
-import { green } from 'react-native-reanimated/lib/typescript/Colors';
+// MaterialCommunityIcons को भी जोड़ा गया है क्योंकि इसका उपयोग AI Chatbot टैब में हो रहा है।
+import { AntDesign, Feather, MaterialCommunityIcons } from '@expo/vector-icons'; 
+
+// Define the main theme color
+const THEME_GREEN = '#2e7d32'; // Deep Green, matching Organic Card
 
 export default function TabLayout() {
   return (
-    <Tabs>
+    <Tabs
+      screenOptions={{
+        // Hide the default header since most screens hide it individually
+        headerShown: false,
+        // Custom Tab Bar Style for the Floating/Hover look
+        tabBarShowLabel: true, 
+        tabBarActiveTintColor: THEME_GREEN,
+        tabBarInactiveTintColor: '#9e9e9e', // Light Gray for inactive tabs
+        tabBarStyle: {
+          // Floating/Hover look:
+          position: 'absolute', // Makes it float over content
+          bottom: 15,
+          marginHorizontal: 20, // Add horizontal margin
+          height: 65, // Slightly taller height
+          borderRadius: 20, // Rounded corners for the floating effect
+          backgroundColor: '#fff', // White background
+          borderTopWidth: 0,
+          elevation: 15, // Android shadow
+          shadowColor: '#000', // iOS shadow
+          shadowOffset: { width: 0, height: 5 },
+          shadowOpacity: 0.15,
+          shadowRadius: 10,
+        },
+        // Style for the individual tab containers
+        tabBarItemStyle: {
+          paddingTop: 5,
+        },
+      }}
+    >
       {/* Home Screen */}
       <Tabs.Screen
-        name="home" // Corresponds to the file `home.tsx`
+        name="home" 
         options={{
           title: 'Home',
-          tabBarActiveTintColor: 'green',
-          headerShown: false, // Hides the default header if you have one in `home.tsx`
           tabBarIcon: ({ color, size }) => (
-        <AntDesign name="home" size={size} color={color} />
+            <AntDesign name="home" size={size} color={color} />
           ),
         }}
       />
 
       {/* Services Screen */}
       <Tabs.Screen
-        name="services" // Corresponds to the file `services.tsx`
+        name="services" 
         options={{
           title: 'Services',
-          headerShown: false,
-          tabBarActiveTintColor: 'green',
           tabBarIcon: ({ color, size }) => (
-            <Feather name="tool" size={size} color={color} />
+            <Feather name="grid" size={size} color={color} /> 
           ),
         }}
       />
 
+      {/* AI Chatbot Screen */}
       <Tabs.Screen
-        name="aichatbot" // Corresponds to the file `services.tsx`
+        name="aichatbot" 
         options={{
-          title: 'Aichatbot',
-          headerShown: false,
-          tabBarActiveTintColor: 'green',
+          title: 'AI Chat',
           tabBarIcon: ({ color, size }) => (
-            <Feather name="code" size={size} color={color} />
+            <MaterialCommunityIcons name="robot-outline" size={size} color={color} />
           ),
         }}
       />
-      
-     
     </Tabs>
   );
 }

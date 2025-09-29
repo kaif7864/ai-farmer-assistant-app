@@ -67,7 +67,7 @@ export default function RegisterScreen() {
             setName("");
             setEmail("");
             setPassword("");
-            router.push("/login");
+            router.push("/account/login");
           },
         },
       ]);
@@ -101,7 +101,7 @@ export default function RegisterScreen() {
         options={{
           headerTitle: "",
           headerRight: () => (
-            <TouchableOpacity onPress={() => router.push("/startscreen")}>
+            <TouchableOpacity onPress={() => router.push("/other/startscreen")}>
               <Ionicons name="home" size={26} color="#2e7d32" style={styles.hicon} />
             </TouchableOpacity>
           ),
@@ -152,8 +152,8 @@ export default function RegisterScreen() {
         <Text style={styles.buttonText}>Sign Up</Text>
       </TouchableOpacity>
 
-      <Link href="/login" asChild>
-        <TouchableOpacity>
+      <Link href="/account/login" asChild>
+        <TouchableOpacity >
           <Text style={styles.linkText}>Already have an account? Log In</Text>
         </TouchableOpacity>
       </Link>

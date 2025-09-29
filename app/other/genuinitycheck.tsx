@@ -8,9 +8,10 @@ const GenuinityCheck: FC = () => {
   const router = useRouter();
 
   const handleScan = () => {
-    // यहाँ आप QR कोड स्कैनर को खोलने का लॉजिक जोड़ सकते हैं।
-    // उदाहरण के लिए: router.push('/scanner');
-    console.log("Scan button pressed. QR code scanner functionality to be implemented.");
+    // IMPORTANT: Expo Router convention के अनुसार छोटे अक्षरों में (lowercase) रूट का उपयोग करें
+    // यह मानते हुए कि QRScannerScreen.tsx, GenuinityCheck.tsx के समान 'other' फ़ोल्डर में है।
+    router.push('/other/qrscannerscreen'); 
+    console.log("Navigating to QR Code Scanner.");
   };
 
   return (

@@ -112,7 +112,7 @@ const DiseaseDetection: FC = () => {
                 </>
               )}
               {selectedImage && (
-                <TouchableOpacity style={styles.detectButton} onPress={() => router.push("/diseasedetail")}>
+                <TouchableOpacity style={styles.detectButton} onPress={() => router.push("/crop/diseasedetail")}>
                   <Text style={styles.detectButtonText}>Detect Disease</Text>
                 </TouchableOpacity>
               )}
@@ -149,7 +149,7 @@ const DiseaseDetection: FC = () => {
                   style={[styles.input, styles.textarea]}
                 />
               </View>
-              <TouchableOpacity style={styles.detectButton} onPress={() => router.push("/diseasedetail")}>
+              <TouchableOpacity style={styles.detectButton} onPress={() => router.push("/crop/diseasedetail")}>
                 <Text style={styles.detectButtonText}>Detect Disease</Text>
               </TouchableOpacity>
             </View>

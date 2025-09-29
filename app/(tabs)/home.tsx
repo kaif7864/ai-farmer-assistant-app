@@ -4,21 +4,20 @@ import {
   Text, 
   StyleSheet, 
   TouchableOpacity, 
-  Image, 
   Modal,
-  Animated, // <<< New Import
+  Animated, 
 } from "react-native";
 import { router, Stack } from "expo-router";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import Header from '../header';
-import BottomNav from '../bottomnav';
-import SideMenu from '../sidemenu';
-import ProfileModal from '../profile';
-import ProductGrid from '../Product';
-import Service from './services'; 
 
-const GOOGLE_ICON_URL = 'https://i.ibb.co/6P6Xq4x/placeholder-profile.png';
+// New Import: QuickLinks component for horizontal scroll links
+import QuickLinks from '../other/quicklinks'; 
+import Header from '../profile/header';
+import ProductGrid from '../other/Product';
+import SideMenu from '../profile/sidemenu';
+import ProfileModal from '../account/profile';
+
 const ORGANIC_ICON = 'seed-outline';
 
 const Home: FC = () => {
@@ -38,12 +37,12 @@ const Home: FC = () => {
 
   const handleLogout = () => {
     setMenuVisible(false);
-    router.push("/startscreen");
+    router.push("/other/startscreen");
   };
 
   const handleweather = () => {
     setMenuVisible(false);
-    router.push("/weather");
+    router.push("/other/weather");
   };
 
   const handleChatbot = () => {
@@ -56,13 +55,9 @@ const Home: FC = () => {
     { useNativeDriver: true } 
   );
 
-  // 3. Animation Logic for Products and Services
-  // These are approximate offsets (adjust based on actual content height)
-  const PRODUCT_OFFSET = 200; 
-  const SERVICE_OFFSET = 500; 
-  const ANIMATION_THRESHOLD = 300; 
-
+  // 3. Animation Logic Helper
   const getAnimationStyles = (offset: number) => {
+    const ANIMATION_THRESHOLD = 300; 
     const inputRange = [offset - ANIMATION_THRESHOLD, offset];
 
     const opacity = scrollY.interpolate({
@@ -80,8 +75,14 @@ const Home: FC = () => {
     return { opacity, transform: [{ translateY }] };
   };
   
+  // Animation for Products (Appears first, starts earlier)
+  const PRODUCT_OFFSET = 150; 
   const productAnimation = getAnimationStyles(PRODUCT_OFFSET);
-  const serviceAnimation = getAnimationStyles(SERVICE_OFFSET);
+
+  // Animation for QuickLinks (Appears second, starts slightly later)
+  // We add some offset based on the content above it (Organic Card + Weather Card + Products)
+  const QUICK_LINKS_OFFSET = 350; 
+  const quickLinksAnimation = getAnimationStyles(QUICK_LINKS_OFFSET);
 
 
   return (
@@ -100,6 +101,7 @@ const Home: FC = () => {
           onScroll={handleScroll}
           scrollEventThrottle={16} 
         >
+          
           {/* Organic Card (Static) */}
           <View style={[styles.card, styles.organicCard]}>
             <View style={styles.cardHeader}>
@@ -133,17 +135,16 @@ const Home: FC = () => {
               </View>
             </View>
           </TouchableOpacity>
-
-          {/* Products Section - Animated */}
+          
+          {/* 1. Products Section - Animated (MOVED UP) */}
           <Animated.View style={productAnimation}>
             <Text style={styles.sectionTitle}>🛒 Recommended Products</Text>
             <ProductGrid />
           </Animated.View>
-
-          {/* Services Section - Animated */}
-          <Animated.View style={serviceAnimation}>
-            <Text style={styles.sectionTitle}>🛠️ Our Services</Text>
-            <Service />
+          
+          {/* 2. Quick Links Row - Animated (MOVED DOWN) */}
+          <Animated.View style={[quickLinksAnimation, {  marginBottom: 15 }]}>
+            <QuickLinks />
           </Animated.View>
           
           <View style={{ height: 100 }} />
@@ -154,7 +155,6 @@ const Home: FC = () => {
           <Ionicons name="chatbubbles" style={styles.fabIcon} />
         </TouchableOpacity>
         
-{/*         <BottomNav /> */}
       </View>
       
       <ProfileModal 
@@ -171,26 +171,23 @@ const Home: FC = () => {
   );
 };
 
-// ... (Styles remain the same as the previous response)
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5', // Lighter background
+    backgroundColor: '#f5f5f5', 
   },
   content: {
     flex: 1,
     paddingHorizontal: 15,
-    paddingTop: 10, // Reduced top padding
+    paddingTop: 10, 
   },
-  
   // --- General Card Styling ---
   card: {
     backgroundColor: '#fff',
-    borderRadius: 12, // More rounded corners
+    borderRadius: 12, 
     padding: 20,
-    marginBottom: 15, // Reduced margin
-    elevation: 5, // Deeper shadow for elevation
+    marginBottom: 15, 
+    elevation: 5, 
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.15,
@@ -199,7 +196,7 @@ const styles = StyleSheet.create({
 
   // --- Enhanced Organic Card ---
   organicCard: {
-    backgroundColor: '#2e7d32', // Darker, rich green background
+    backgroundColor: '#2e7d32', 
     padding: 25,
     marginBottom: 25,
   },
@@ -213,17 +210,17 @@ const styles = StyleSheet.create({
   },
   organicCardTitle: {
     fontSize: 20,
-    fontWeight: '800', // Extra bold title
+    fontWeight: '800', 
     color: '#fff',
   },
   organicCardDescription: {
     fontSize: 14,
-    color: '#e8f5e9', // Very light green text
+    color: '#e8f5e9', 
     marginBottom: 15,
     lineHeight: 22,
   },
   organicButton: {
-    backgroundColor: '#a5d6a7', // Light green button
+    backgroundColor: '#a5d6a7', 
     paddingVertical: 8,
     paddingHorizontal: 15,
     borderRadius: 8,
@@ -240,10 +237,9 @@ const styles = StyleSheet.create({
     marginBottom: 25,
   },
   weatherCard: {
-    backgroundColor: '#42a5f5', // A vibrant blue for sky/weather theme
+    backgroundColor: '#42a5f5', 
     padding: 20,
     borderRadius: 15,
-    // Optional: Add a subtle gradient effect here if using a library
   },
   weatherHeader: {
     flexDirection: 'row',
@@ -260,6 +256,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
+    marginLeft: 5,
   },
   weatherDetails: {
     flexDirection: 'row',
@@ -272,7 +269,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   weatherDegrees: {
-    fontSize: 50, // Larger temperature
+    fontSize: 50, 
     fontWeight: '800',
     color: '#fff',
     marginLeft: 5,
@@ -287,28 +284,28 @@ const styles = StyleSheet.create({
   },
   weatherDescription: {
     fontSize: 12,
-    color: '#e0e0e0', // Slightly faded white
+    color: '#e0e0e0', 
     marginTop: 2,
   },
 
   // --- Section Titles ---
   sectionTitle: {
     fontSize: 20,
-    fontWeight: '700', // Semi-bold for titles
-    color: '#2e7d32', // Rich green title
-    marginTop: 20,
+    fontWeight: '700', 
+    color: '#2e7d32', 
+    // marginTop: 10,
     marginBottom: 15,
     paddingLeft: 5,
-    borderLeftWidth: 4, // Simple accent line
+    borderLeftWidth: 4, 
     borderLeftColor: '#4caf50',
   },
 
   // --- FAB ---
   fab: {
     position: 'absolute',
-    bottom: 5, // Moved up to clear BottomNav
+    bottom:85, 
     right: 20,
-    backgroundColor: '#ff9800', // Orange/Accent color
+    backgroundColor: '#ff9800', 
     width: 55,
     height: 55,
     borderRadius: 27.5,
