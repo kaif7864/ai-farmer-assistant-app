@@ -1,8 +1,8 @@
-import { BarCodeScanner } from 'expo-barcode-scanner';
 import { router } from 'expo-router';
 import React, { FC, useEffect, useState } from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { Camera, CameraView } from 'expo-camera'; // Import both Camera and CameraView
 
 const QRScannerScreen: FC = () => {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
@@ -11,8 +11,8 @@ const QRScannerScreen: FC = () => {
   // 1. Camera Permission Request
   useEffect(() => {
     const getBarCodeScannerPermissions = async () => {
-      // कैमरा एक्सेस की अनुमति मांगें
-      const { status } = await BarCodeScanner.requestPermissionsAsync();
+      // Use Camera (module) for permissions, not CameraView
+      const { status } = await Camera.requestCameraPermissionsAsync();
       setHasPermission(status === 'granted');
     };
 
@@ -20,28 +20,23 @@ const QRScannerScreen: FC = () => {
   }, []);
 
   // 2. Handle Scanned QR Code
-  const handleBarCodeScanned = ({ type, data }: { type: string, data: string }) => {
-    // यदि पहले से स्कैन नहीं हुआ है, तो ही आगे बढ़ें
-    if (scanned) return; 
+  const handleBarCodeScanned = ({ type, data }: { type: string; data: string }) => {
+    if (scanned) return;
 
     setScanned(true);
-    
-    // यहाँ QR कोड डेटा (data) को सर्वर पर भेजकर Genuinity Check का Logic आएगा
+
     Alert.alert(
       'Scan Complete',
-      `Bar code of type ${type} with data ${data} has been scanned.`,
+      `Bar code of type ${type} with data ${data} has been scanned at ${new Date().toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata" })} IST.`,
       [
-        { 
-          text: 'Check Genuinity', 
-          onPress: () => {
-            // स्कैन के बाद वापस जाएं
-            router.back(); 
-          }
+        {
+          text: 'Check Genuinity',
+          onPress: () => router.back(),
         },
-        { 
-          text: 'Scan Again', 
-          onPress: () => setScanned(false) // स्कैनिंग रीसेट करें
-        }
+        {
+          text: 'Scan Again',
+          onPress: () => setScanned(false),
+        },
       ]
     );
   };
@@ -64,23 +59,18 @@ const QRScannerScreen: FC = () => {
   // 4. Scanner View
   return (
     <View style={styles.container}>
-      {/* BarCodeScanner पूरी स्क्रीन को कवर करता है */}
-      <BarCodeScanner
-        onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+      <CameraView
+        onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+        facing="back"
         style={StyleSheet.absoluteFillObject}
       />
-
-      {/* Overlay for focus */}
       <View style={styles.overlay}>
         <View style={styles.focusBox} />
         <Text style={styles.overlayText}>Center the QR Code in the box</Text>
       </View>
-
-      {/* Custom Back Button */}
       <TouchableOpacity onPress={() => router.back()} style={styles.backButtonOverlay}>
         <Ionicons name="arrow-back" size={30} color="#fff" />
       </TouchableOpacity>
-      
     </View>
   );
 };
@@ -117,11 +107,9 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
-  // Overlay Styles
   overlay: {
     flex: 1,
-    // यह महत्वपूर्ण है कि background transparent हो ताकि कैमरा फीड दिख सके
-    backgroundColor: 'transparent', 
+    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -149,7 +137,7 @@ const styles = StyleSheet.create({
     padding: 5,
     backgroundColor: 'rgba(0,0,0,0.5)',
     borderRadius: 50,
-  }
+  },
 });
 
 export default QRScannerScreen;

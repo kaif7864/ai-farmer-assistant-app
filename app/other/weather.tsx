@@ -1,74 +1,253 @@
-import React, { FC } from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
-import Ionicons from 'react-native-vector-icons/Ionicons';
-// FontAwesome5 is an external library; using the correct import here
-import { FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons'; 
+import React, { FC, useState, useEffect } from "react";
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Image } from "react-native";
+import axios from "axios";
+import { MaterialCommunityIcons } from '@expo/vector-icons'; // Assuming expo for icons
+// import { EXPO_PUBLIC_API_URL } from "@env";
 
-interface DailyForecastProps {
-  day: string;
-  icon: string; // FontAwesome5 icon name
-  temp: string;
-  condition: string;
+// Assuming WeatherCard component in React Native
+interface WeatherCardProps {
+  name: string;
+  value: string | number;
+  image: string; // URL for icon
 }
 
-// --- Component: DailyForecast ---
-const DailyForecast: FC<DailyForecastProps> = ({ day, icon, temp, condition }) => {
+const WeatherCard: FC<WeatherCardProps> = ({ name, value, image }) => {
   return (
-    <View style={styles.forecastCard}>
-      <Text style={styles.dayText}>{day}</Text>
-      {/* Use FontAwesome5 for the icons */}
-      <FontAwesome5 name={icon} size={30} color="#2e7d32" style={styles.forecastIcon} />
-      <Text style={styles.tempText}>{temp}</Text>
-      <Text style={styles.conditionText}>{condition}</Text>
+    <View style={styles.weatherCard}>
+      <Image source={{ uri: image }} style={styles.cardIcon} />
+      <Text style={styles.cardName}>{name}</Text>
+      <Text style={styles.cardValue}>{value}</Text>
     </View>
   );
 };
 
-// --- Component: WeatherReport ---
-const WeatherReport: FC = () => {
-  // Dummy data for the next 7 days' weather forecast
-  const weatherData = [
-    { day: 'Mon', icon: 'sun', temp: '28°C', condition: 'Sunny' },
-    { day: 'Tue', icon: 'cloud-sun', temp: '26°C', condition: 'Partly Cloudy' },
-    { day: 'Wed', icon: 'cloud-showers-heavy', temp: '24°C', condition: 'Heavy Rain' },
-    { day: 'Thu', icon: 'cloud', temp: '25°C', condition: 'Cloudy' },
-    { day: 'Fri', icon: 'sun', temp: '27°C', condition: 'Sunny' },
-    { day: 'Sat', icon: 'cloud-sun', temp: '26°C', condition: 'Partly Cloudy' },
-    { day: 'Sun', icon: 'cloud-showers-heavy', temp: '23°C', condition: 'Rain' },
-  ];
+// Assuming WeatherDayCard component in React Native
+interface WeatherDayCardProps {
+  day: string;
+  temp: number;
+  humidity: number;
+  wind: number;
+  sunrise: string;
+  sunset: string;
+  icon: string; // URL for icon
+}
+
+const WeatherDayCard: FC<WeatherDayCardProps> = ({ day, temp, humidity, wind, sunrise, sunset, icon }) => {
+  return (
+    <View style={styles.dayCard}>
+      <Text style={styles.dayText}>{day}</Text>
+      <Image source={{ uri: icon }} style={styles.dayIcon} />
+      <Text style={styles.dayTemp}>{temp}°C</Text>
+      <Text style={styles.dayDetail}>Humidity: {humidity}%</Text>
+      <Text style={styles.dayDetail}>Wind: {wind} Km/h</Text>
+      <Text style={styles.dayDetail}>Sunrise: {sunrise}</Text>
+      <Text style={styles.dayDetail}>Sunset: {sunset}</Text>
+    </View>
+  );
+};
+
+
+
+const Weather: FC = () => {
+  const [next7Days, setNext7Days] = useState<any[]>([]);
+  const [prev7Days, setPrev7Days] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  const EXPO_PUBLIC_API_URL = "http://10.70.24.226:8000"
+
+  useEffect(() => {
+    const handleWeatherReport = async () => {
+      try {
+        setLoading(true);
+
+        // Fetch next 7 days
+        const response = await axios.get(
+          `${EXPO_PUBLIC_API_URL}/weather/next/7days?city=haridwar` // Adjusted for RN, assuming env setup
+        );
+        if (response.status === 200) {
+          setNext7Days(response.data.slice(0, 7));
+        }
+
+        // Fetch previous 7 days
+        const res = await axios.get(
+          `${EXPO_PUBLIC_API_URL}/weather/previous/7days?city=haridwar`
+        );
+        if (res.status === 200) {
+          setPrev7Days(res.data);
+        }
+      } catch (error) {
+        console.error("Error fetching weather:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    handleWeatherReport();
+  }, []);
+
+  // Function to get day name
+  const getDayName = (datetime: string, idx: number) => {
+    if (idx === 0) return "Today";
+    const date = new Date(datetime);
+    return date.toLocaleDateString("en-US", { weekday: "short" });
+  };
+
+  // Function to get weather icon based on conditions
+  const getWeatherIcon = (condition?: string) => {
+    if (!condition) return "https://unpkg.com/lucide-static/icons/cloud.svg";
+    const lower = condition.toLowerCase();
+
+    if (lower.includes("rain"))
+      return "https://unpkg.com/lucide-static/icons/cloud-rain.svg";
+    if (lower.includes("cloud"))
+      return "https://unpkg.com/lucide-static/icons/cloud.svg";
+    if (lower.includes("sun") || lower.includes("clear"))
+      return "https://unpkg.com/lucide-static/icons/sun.svg";
+    if (lower.includes("snow"))
+      return "https://unpkg.com/lucide-static/icons/cloud-snow.svg";
+    if (lower.includes("storm") || lower.includes("thunder"))
+      return "https://unpkg.com/lucide-static/icons/cloud-lightning.svg";
+
+    return "https://unpkg.com/lucide-static/icons/cloud.svg";
+  };
 
   return (
     <View style={styles.container}>
-      {/* Header: Deep Green background */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Weather Report</Text>
-      </View>
-
-      <ScrollView contentContainerStyle={styles.content}>
-        {/* Current Weather Card: Blue/Vibrant color for weather focus */}
-        <View style={styles.currentWeatherCard}>
-            {/* Using MaterialCommunityIcons for a modern look */}
-          <MaterialCommunityIcons name="weather-partly-cloudy" size={80} color="#4fc3f7" /> 
-          <Text style={styles.currentTemp}>25°C</Text>
-          <Text style={styles.locationText}>Hyderabad, India</Text>
-          <Text style={styles.currentCondition}>Partly Cloudy</Text>
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#3b82f6" />
         </View>
+      ) : (
+        next7Days.length > 0 && prev7Days.length > 0 && (
+          <ScrollView contentContainerStyle={styles.content}>
+            <View style={styles.mainGrid}>
+              {/* Left Section */}
+              <View style={styles.leftSection}>
+                {/* Current Weather */}
+                <View style={styles.currentWeather}>
+                  <View style={styles.currentIconContainer}>
+                    <Image
+                      source={{ uri: getWeatherIcon(next7Days[0]?.conditions) }}
+                      style={styles.currentIcon}
+                    />
+                  </View>
+                  <View>
+                    <Text style={styles.currentTemp}>{next7Days[0]?.temp}°C</Text>
+                    <Text style={styles.feelsLike}>Feels like {next7Days[0]?.temp}°C</Text>
+                  </View>
+                </View>
 
-        <Text style={styles.sevenDayForecastTitle}>Next 7 Days Forecast</Text>
-        <ScrollView horizontal={true} showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
-          {weatherData.map((day, index) => (
-            <DailyForecast 
-              key={index}
-              day={day.day}
-              icon={day.icon}
-              temp={day.temp}
-              condition={day.condition}
-            />
-          ))}
-        </ScrollView>
-        {/* Add padding at the bottom for the floating tab bar */}
-        <View style={{ height: 100 }} /> 
-      </ScrollView>
+                {/* Weather Stats Grid */}
+                <View style={styles.statsGrid}>
+                  <WeatherCard
+                    name="Humidity"
+                    value={next7Days[0]?.humidity}
+                    image="https://unpkg.com/lucide-static/icons/droplets.svg"
+                  />
+                  <WeatherCard
+                    name="Wind"
+                    value={`${next7Days[0]?.wind} Km/h`}
+                    image="https://unpkg.com/lucide-static/icons/wind.svg"
+                  />
+                  <WeatherCard
+                    name="Visibility"
+                    value={`${next7Days[0]?.visibility} Km`}
+                    image="https://unpkg.com/lucide-static/icons/eye.svg"
+                  />
+                  <WeatherCard
+                    name="UV Index"
+                    value={next7Days[0]?.uvindex}
+                    image="https://unpkg.com/lucide-static/icons/sun.svg"
+                  />
+                  <WeatherCard
+                    name="Pressure"
+                    value={`${next7Days[0]?.pressure} hpa`}
+                    image="https://unpkg.com/lucide-static/icons/gauge.svg"
+                  />
+                  <WeatherCard
+                    name="Feels Like"
+                    value={`${next7Days[0]?.temp} °C`}
+                    image="https://unpkg.com/lucide-static/icons/thermometer.svg"
+                  />
+                  <WeatherCard
+                    name="Sunrise"
+                    value={next7Days[0]?.sunrise}
+                    image="https://unpkg.com/lucide-static/icons/sunrise.svg"
+                  />
+                  <WeatherCard
+                    name="Sunset"
+                    value={next7Days[0]?.sunset}
+                    image="https://unpkg.com/lucide-static/icons/sunset.svg"
+                  />
+                </View>
+              </View>
+
+              {/* Right Section */}
+              <View style={styles.rightSection}>
+                <Text style={styles.recommendationsTitle}>
+                  <MaterialCommunityIcons name="leaf" size={24} color="#16a34a" /> Farming Recommendations
+                </Text>
+                <View style={styles.recommendationsContainer}>
+                  <View style={styles.recommendationCard}>
+                    <MaterialCommunityIcons name="alert" size={20} color="#eab308" />
+                    <View style={styles.recommendationContent}>
+                      <Text style={styles.recommendationHeader}>High humidity alert</Text>
+                      <Text style={styles.recommendationText}>
+                        Monitor crops for fungal diseases and improve ventilation
+                      </Text>
+                      <View style={styles.recommendationFooter}>
+                        <Text style={styles.recommendationTip}>Check crops twice daily</Text>
+                        <View style={styles.priorityBadge}>
+                          <Text style={styles.priorityText}>medium priority</Text>
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+                  {/* More recommendations can be added here */}
+                </View>
+              </View>
+            </View>
+
+            {/* Next 7 Days Forecast */}
+            <View style={styles.forecastSection}>
+              <Text style={styles.forecastHeader}>Next 7 Days Weather Report</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.forecastGrid}>
+                {next7Days.map((dayData, idx) => (
+                  <WeatherDayCard
+                    key={idx}
+                    day={getDayName(dayData.date, idx)}
+                    temp={dayData.temp}
+                    humidity={dayData.humidity}
+                    wind={dayData.wind}
+                    sunrise={dayData.sunrise}
+                    sunset={dayData.sunset}
+                    icon={getWeatherIcon(dayData.condition)}
+                  />
+                ))}
+              </ScrollView>
+            </View>
+
+            {/* Previous 7 Days Forecast */}
+            <View style={styles.forecastSection}>
+              <Text style={styles.forecastHeader}>Previous 7 Days Weather Report</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.forecastGrid}>
+                {prev7Days.map((dayData, idx) => (
+                  <WeatherDayCard
+                    key={idx}
+                    day={getDayName(dayData.date, idx)}
+                    temp={dayData.temp}
+                    humidity={dayData.humidity}
+                    wind={dayData.wind}
+                    sunrise={dayData.sunrise}
+                    sunset={dayData.sunset}
+                    icon={getWeatherIcon(dayData.condition)}
+                  />
+                ))}
+              </ScrollView>
+            </View>
+          </ScrollView>
+        )
+      )}
     </View>
   );
 };
@@ -76,104 +255,189 @@ const WeatherReport: FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5', // Light background
+    backgroundColor: '#f8fafc',
   },
-  header: {
-    backgroundColor: '#2e7d32', // Deep Green Theme
-    paddingVertical: 15,
-    paddingHorizontal: 15,
-    paddingTop: 50,
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    zIndex: 10,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '900', // Extra bold
-    color: '#fff',
-    letterSpacing: 1,
   },
   content: {
-    padding: 15,
+    padding: 16,
   },
-  currentWeatherCard: {
-    backgroundColor: '#fff',
-    borderRadius: 20, // More rounded corners
-    padding: 30,
+  mainGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  leftSection: {
+    flex: 2,
+    marginRight: 16,
+  },
+  currentWeather: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 25,
-    elevation: 8, // Better shadow for depth
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 5,
-    borderWidth: 1,
-    borderColor: '#eee',
+    marginBottom: 16,
   },
-  locationText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#757575',
-    marginTop: 10,
+  currentIconContainer: {
+    backgroundColor: '#dbeafe',
+    padding: 16,
+    borderRadius: 16,
+    marginRight: 16,
+  },
+  currentIcon: {
+    width: 64,
+    height: 64,
   },
   currentTemp: {
-    fontSize: 70, // Larger temperature
-    fontWeight: '200',
-    color: '#333',
-    marginVertical: 5,
+    fontSize: 48,
+    fontWeight: 'bold',
+    color: '#111827',
   },
-  currentCondition: {
-    fontSize: 20,
-    color: '#424242',
-    fontWeight: '500',
+  feelsLike: {
+    fontSize: 14,
+    color: '#6b7280',
   },
-  sevenDayForecastTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#2e7d32', // Theme color
-    marginBottom: 15,
-    marginLeft: 5,
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
   },
-  horizontalScroll: {
-    // flexGrow: 0 is fine, but sometimes needs to be handled by contentContainerStyle
-  },
-  forecastCard: {
+  weatherCard: {
+    width: '48%',
     backgroundColor: '#fff',
-    borderRadius: 15,
-    padding: 15,
+    padding: 12,
+    borderRadius: 8,
     alignItems: 'center',
-    marginRight: 10,
-    width: 110, // Fixed width for horizontal scroll
-    elevation: 3,
+    marginBottom: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 3,
-    justifyContent: 'space-between',
-    height: 150,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  dayText: {
+  cardIcon: {
+    width: 24,
+    height: 24,
+    marginBottom: 8,
+  },
+  cardName: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#2e7d32', // Theme color
+    color: '#374151',
   },
-  forecastIcon: {
-    marginVertical: 10,
-  },
-  tempText: {
+  cardValue: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#333',
+    color: '#111827',
   },
-  conditionText: {
+  rightSection: {
+    flex: 1,
+  },
+  recommendationsTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#111827',
+    marginBottom: 16,
+  },
+  recommendationsContainer: {
+    flex: 1,
+  },
+  recommendationCard: {
+    flexDirection: 'row',
+    backgroundColor: '#fefce8',
+    padding: 16,
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: '#eab308',
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  recommendationContent: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  recommendationHeader: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#111827',
+  },
+  recommendationText: {
+    fontSize: 14,
+    color: '#374151',
+    marginBottom: 8,
+  },
+  recommendationFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  recommendationTip: {
     fontSize: 12,
-    color: '#555',
+    color: '#6b7280',
+  },
+  priorityBadge: {
+    backgroundColor: '#fef08a',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  priorityText: {
+    fontSize: 12,
+    color: '#a16207',
+    fontWeight: '500',
+  },
+  forecastSection: {
+    backgroundColor: '#e0f2fe',
+    padding: 16,
+    marginTop: 16,
+    borderRadius: 8,
+  },
+  forecastHeader: {
+    fontSize: 24,
+    fontWeight: 'bold',
     textAlign: 'center',
-    marginTop: 5,
+    marginBottom: 16,
+  },
+  forecastGrid: {
+    flexDirection: 'row',
+  },
+  dayCard: {
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginRight: 8,
+    width: 160,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  dayText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  dayIcon: {
+    width: 48,
+    height: 48,
+    marginBottom: 8,
+  },
+  dayTemp: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  dayDetail: {
+    fontSize: 14,
+    color: '#374151',
+    marginBottom: 2,
   },
 });
 
-export default WeatherReport;
+export default Weather;

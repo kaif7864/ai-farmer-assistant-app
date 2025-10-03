@@ -1,81 +1,224 @@
-import React, { FC, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView } from "react-native";
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import React, { FC, useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  ScrollView,
+  ActivityIndicator,
+  Dimensions,
+} from "react-native";
+import axios from "axios";
+import { LineChart } from "react-native-chart-kit";
 
-interface MandiPrice {
-  id: string;
-  crop: string;
-  mandi: string;
-  price: string;
-  date: string;
-}
+const MarketDashboard: FC = () => {
+  const [state, setState] = useState<string>("Uttrakhand");
+  const [district, setDistrict] = useState<string>("Haridwar");
+  const [market, setMarket] = useState<string>("Haridwar");
+  const [commodity, setCommodity] = useState<string>("Rice");
+  const [tableData, setTableData] = useState<any[]>([]);
+  const [graphData, setGraphData] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
-const DUMMY_PRICES: MandiPrice[] = [
-  { id: '1', crop: 'Wheat', mandi: 'Indore', price: '₹2,500/quintal', date: '2024-09-15' },
-  { id: '2', crop: 'Rice', mandi: 'Bhopal', price: '₹3,200/quintal', date: '2024-09-15' },
-  { id: '3', crop: 'Maize', mandi: 'Jaipur', price: '₹1,800/quintal', date: '2024-09-14' },
-  { id: '4', crop: 'Mustard', mandi: 'Jodhpur', price: '₹5,800/quintal', date: '2024-09-14' },
-  { id: '5', crop: 'Onion', mandi: 'Nasik', price: '₹2,200/quintal', date: '2024-09-15' },
-  { id: '6', crop: 'Potato', mandi: 'Agra', price: '₹1,500/quintal', date: '2024-09-15' },
-  { id: '7', crop: 'Tomato', mandi: 'Hyderabad', price: '₹1,000/quintal', date: '2024-09-14' },
-];
+  // Fetch last 7 days prices
+  const fetchTableData = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.post("http://10.70.24.226:8000/ai/mandi/price", {
+        state,
+        District: district,
+        Market: market,
+        Commodity: commodity,
+      });
 
-const MandiPrices: FC = () => {
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [selectedMandi, setSelectedMandi] = useState<string>('All Mandis');
+      const tableString = response.data.response;
 
-  const filteredPrices = DUMMY_PRICES.filter(item =>
-    item.crop.toLowerCase().includes(searchQuery.toLowerCase()) &&
-    (selectedMandi === 'All Mandis' || item.mandi === selectedMandi)
-  );
+      const rows = tableString
+        .split("\n")
+        .slice(2) // Skip header
+        .map((row: string) => {
+          const cols = row
+            .split("|")
+            .map((c: string) => c.trim())
+            .filter((c: string) => c !== "");
+          return {
+            date: cols[0],
+            state: cols[1],
+            district: cols[2],
+            market: cols[3],
+            commodity: cols[4],
+            min_price: cols[5],
+            max_price: cols[6],
+          };
+        });
+
+      setTableData(rows);
+      setLoading(false);
+    } catch (error) {
+      console.error("Table fetch error:", error);
+      setLoading(false);
+    }
+  };
+
+  // Fetch 5-year graph data
+  // const fetchGraphData = async () => {
+  //   try {
+  //     const response = await axios.post("http://10.214.222.226:8000/ai/mandi/price/graph", {
+  //       state,
+  //       District: district,
+  //       Market: market,
+  //       Commodity: commodity,
+  //     });
+
+  //     const jsonString = response.data.response.replace(/json|/g, "");
+  //     const parsed = JSON.parse(jsonString);
+
+  //     // Handle both possible keys ("Rice Data" OR "RiceData")
+  //     const dataKey = `${commodity} Data`;
+  //     const rawData = parsed[dataKey] || parsed[`${commodity}Data`] || [];
+
+  //     // Map keys to simple names
+  //     const processedData = rawData.map((item: any) => ({
+  //       Year: item["Year"],
+  //       AveragePrice: parseFloat(item["Average Price (₹)"]),
+  //       ProfitLoss: parseFloat(item["Profit/Loss (₹ per ton)"]),
+  //     }));
+
+  //     setGraphData(processedData);
+  //   } catch (error) {
+  //     console.error("Graph fetch error:", error);
+  //   }
+  // };
+
+  // Fetch data whenever inputs change
+  useEffect(() => {
+    fetchTableData();
+    // fetchGraphData();
+  }, [state, district, market, commodity]);
 
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>📊 Mandi Prices</Text>
+        <Text style={styles.headerTitle}>🌾 Market Dashboard</Text>
       </View>
 
       <ScrollView style={styles.content}>
-        {/* Search and Filter Card */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Find Latest Market Prices</Text>
+        {/* Input Fields */}
+        <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
-            placeholder="Search for a crop..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
+            placeholder="State"
+            value={state}
+            onChangeText={setState}
+            placeholderTextColor="#888"
           />
-          <TouchableOpacity style={styles.filterButton}>
-            <Text style={styles.filterButtonText}>
-              <Ionicons name="location-outline" size={16} /> Filter by Mandi (Coming Soon)
-            </Text>
-          </TouchableOpacity>
+          <TextInput
+            style={styles.input}
+            placeholder="District"
+            value={district}
+            onChangeText={setDistrict}
+            placeholderTextColor="#888"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Market"
+            value={market}
+            onChangeText={setMarket}
+            placeholderTextColor="#888"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Commodity"
+            value={commodity}
+            onChangeText={setCommodity}
+            placeholderTextColor="#888"
+          />
         </View>
 
-        {/* Prices List */}
-        {filteredPrices.length > 0 ? (
-          filteredPrices.map((item) => (
-            <View key={item.id} style={styles.priceCard}>
-              <View style={styles.priceHeader}>
-                <Text style={styles.cropName}>{item.crop}</Text>
-                <Text style={styles.priceText}>{item.price}</Text>
+        {/* Table Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>📊 Last 7 Days Prices</Text>
+          {loading ? (
+            <ActivityIndicator size="large" color="#4caf50" />
+          ) : tableData.length > 0 ? (
+            <View style={styles.table}>
+              {/* Table Header */}
+              <View style={styles.tableRow}>
+                <Text style={[styles.tableHeader, { flex: 1.5 }]}>Date</Text>
+                <Text style={[styles.tableHeader, { flex: 1 }]}>State</Text>
+                <Text style={[styles.tableHeader, { flex: 1 }]}>District</Text>
+                <Text style={[styles.tableHeader, { flex: 1 }]}>Market</Text>
+                <Text style={[styles.tableHeader, { flex: 1.5 }]}>Commodity</Text>
+                <Text style={[styles.tableHeader, { flex: 1 }]}>Min Price (₹)</Text>
+                <Text style={[styles.tableHeader, { flex: 1 }]}>Max Price (₹)</Text>
               </View>
-              <View style={styles.priceDetails}>
-                <Text style={styles.detailText}>
-                  <Ionicons name="cube-outline" size={14} color="#888" /> Mandi: {item.mandi}
-                </Text>
-                <Text style={styles.detailText}>
-                  <Ionicons name="calendar-outline" size={14} color="#888" /> Date: {item.date}
-                </Text>
-              </View>
+              {/* Table Rows */}
+              {tableData.map((item, index) => (
+                <View key={index} style={styles.tableRow}>
+                  <Text style={[styles.tableCell, { flex: 1.5 }]}>{item.date}</Text>
+                  <Text style={[styles.tableCell, { flex: 1 }]}>{item.state}</Text>
+                  <Text style={[styles.tableCell, { flex: 1 }]}>{item.district}</Text>
+                  <Text style={[styles.tableCell, { flex: 1 }]}>{item.market}</Text>
+                  <Text style={[styles.tableCell, { flex: 1.5 }]}>{item.commodity}</Text>
+                  <Text style={[styles.tableCell, { flex: 1 }]}>{item.min_price}</Text>
+                  <Text style={[styles.tableCell, { flex: 1 }]}>{item.max_price}</Text>
+                </View>
+              ))}
             </View>
-          ))
-        ) : (
-          <View style={styles.noResultsCard}>
-            <Text style={styles.noResultsText}>No results found for "{searchQuery}".</Text>
-          </View>
-        )}
+          ) : (
+            <Text style={styles.noDataText}>No data available</Text>
+          )}
+        </View>
+
+        {/* Graph Section */}
+        {/* <View style={styles.section}>
+          <Text style={styles.sectionTitle}>📈 5-Year Trend</Text>
+          {graphData.length > 0 ? (
+            <LineChart
+              data={{
+                labels: graphData.map((item) => item.Year.toString()),
+                datasets: [
+                  {
+                    data: graphData.map((item) => item.AveragePrice),
+                    color: () => `#82ca9d`,
+                    strokeWidth: 2,
+                  },
+                  {
+                    data: graphData.map((item) => item.ProfitLoss),
+                    color: () => `#8884d8`,
+                    strokeWidth: 2,
+                  },
+                ],
+                legend: ["Average Price", "Profit/Loss"],
+              }}
+              width={Dimensions.get("window").width - 30}
+              height={400}
+              chartConfig={{
+                backgroundColor: "#fff",
+                backgroundGradientFrom: "#fff",
+                backgroundGradientTo: "#fff",
+                decimalPlaces: 0,
+                color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                style: {
+                  borderRadius: 16,
+                },
+                propsForDots: {
+                  r: "6",
+                  strokeWidth: "2",
+                },
+              }}
+              bezier
+              style={{
+                marginVertical: 8,
+                borderRadius: 16,
+              }}
+            />
+          ) : (
+            <Text style={styles.noDataText}>No graph data available</Text>
+          )}
+        </View> */}
       </ScrollView>
     </View>
   );
@@ -104,23 +247,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingTop: 20,
   },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 20,
+  inputContainer: {
     marginBottom: 20,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#2e7d32',
-    marginBottom: 15,
-    textAlign: 'center',
   },
   input: {
     borderWidth: 1,
@@ -132,71 +260,49 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     marginBottom: 10,
   },
-  filterButton: {
-    backgroundColor: '#e8f5e9',
-    borderRadius: 8,
-    padding: 12,
-    alignItems: 'center',
+  section: {
+    marginBottom: 20,
   },
-  filterButtonText: {
-    color: '#4caf50',
-    fontWeight: 'bold',
-  },
-  priceCard: {
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 20,
-    marginBottom: 15,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-  },
-  priceHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  cropName: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#2e7d32',
-  },
-  priceText: {
+  sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#4caf50',
+    color: '#2e7d32',
+    marginBottom: 15,
+    textAlign: 'center',
   },
-  priceDetails: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  detailText: {
-    fontSize: 14,
-    color: '#555',
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  noResultsCard: {
+  table: {
     backgroundColor: '#fff',
     borderRadius: 10,
-    padding: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
+    padding: 10,
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
   },
-  noResultsText: {
+  tableRow: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    paddingVertical: 10,
+  },
+  tableHeader: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#2e7d32',
+    textAlign: 'center',
+  },
+  tableCell: {
+    fontSize: 14,
+    color: '#555',
+    textAlign: 'center',
+  },
+  noDataText: {
     fontSize: 16,
     color: '#888',
     textAlign: 'center',
+    marginTop: 20,
   },
 });
 
-export default MandiPrices;
+export default MarketDashboard;
